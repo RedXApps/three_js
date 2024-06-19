@@ -21,7 +21,7 @@ class AfterimagePass extends Pass {
     textureComp = WebGLRenderTarget(
         bufferSizeMap["width"],
         bufferSizeMap["height"],
-        WebGLRenderTargetOptions({
+        RenderTargetOptions({
           "minFilter": LinearFilter,
           "magFilter": NearestFilter,
           "format": RGBAFormat
@@ -30,7 +30,7 @@ class AfterimagePass extends Pass {
     textureOld = WebGLRenderTarget(
         bufferSizeMap["width"],
         bufferSizeMap["height"],
-        WebGLRenderTargetOptions({
+        RenderTargetOptions({
           "minFilter": LinearFilter,
           "magFilter": NearestFilter,
           "format": RGBAFormat

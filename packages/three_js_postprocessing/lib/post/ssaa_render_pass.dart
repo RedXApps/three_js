@@ -76,7 +76,7 @@ class SSAARenderPass extends Pass {
       sampleRenderTarget = WebGLRenderTarget(
           readBuffer.width,
           readBuffer.height,
-          WebGLRenderTargetOptions({
+          RenderTargetOptions({
             "minFilter": LinearFilter,
             "magFilter": LinearFilter,
             "format": RGBAFormat

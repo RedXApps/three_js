@@ -54,7 +54,7 @@ class UnrealBloomPass extends Pass {
     clearColor = Color(0, 0, 0);
 
     // render targets
-    final pars = WebGLRenderTargetOptions({
+    final pars = RenderTargetOptions({
       "minFilter": LinearFilter,
       "magFilter": LinearFilter,
       "format": RGBAFormat

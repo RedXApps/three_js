@@ -96,7 +96,7 @@ class ShadowUniformsCache {
 int nextVersion = 0;
 
 int shadowCastingLightsFirst(Light lightA, Light lightB) {
-  return (lightB.castShadow ? 1 : 0) - (lightA.castShadow ? 1 : 0);
+  return ( lightB.castShadow ? 2 : 0 ) - ( lightA.castShadow ? 2 : 0 ) + ( lightB.map != null? 1 : 0 ) - ( lightA.map != null? 1 : 0 );
 }
 
 class WebGLLights {
@@ -107,9 +107,8 @@ class WebGLLights {
   late Matrix4 matrix4;
   late Matrix4 matrix42;
   WebGLExtensions extensions;
-  WebGLCapabilities capabilities;
 
-  WebGLLights(this.extensions, this.capabilities) {
+  WebGLLights(this.extensions) {
     cache = UniformsCache();
     shadowCache = ShadowUniformsCache();
 
@@ -132,6 +131,7 @@ class WebGLLights {
       "directionalShadowMap": [],
       "directionalShadowMatrix": [],
       "spot": [],
+      'spotLightMap': [],
       "spotShadow": [],
       "spotShadowMap": [],
       "spotShadowMatrix": [],
@@ -142,7 +142,9 @@ class WebGLLights {
       "pointShadow": [],
       "pointShadowMap": [],
       "pointShadowMatrix": [],
-      "hemi": []
+      "hemi": [],
+      'numSpotLightShadowsWithMaps': 0,
+      'numLightProbes': 0
     });
 
     for (int i = 0; i < 9; i++) {
@@ -172,6 +174,10 @@ class WebGLLights {
     int numDirectionalShadows = 0;
     int numPointShadows = 0;
     int numSpotShadows = 0;
+		int numSpotMaps = 0;
+		int numSpotShadowsWithMaps = 0;
+
+		int numLightProbes = 0;
 
     lights.sort((a, b) => shadowCastingLightsFirst(a, b));
 
@@ -240,8 +246,20 @@ class WebGLLights {
         uniforms["penumbraCos"] = math.cos(light.angle! * (1 - light.penumbra!));
         uniforms["decay"] = light.decay;
 
+        final shadow = light.shadow!;
+
+				if ( light.map ) {
+					state.spotLightMap[ numSpotMaps ] = light.map;
+					numSpotMaps ++;
+
+					// make sure the lightMatrix is up to date
+					// TODO : do it if required only
+					shadow.updateMatrices( light );
+					if (light.castShadow) numSpotShadowsWithMaps ++;
+				}
+
         if (light.castShadow) {
-          final shadow = light.shadow!;
+          
 
           final shadowUniforms = shadowCache.get(light);
 
@@ -338,24 +356,8 @@ class WebGLLights {
     }
 
     if (rectAreaLength > 0) {
-      if (capabilities.isWebGL2) {
-        // WebGL 2
-
-        state.rectAreaLTC1 = uniformsLib["LTC_FLOAT_1"];
-        state.rectAreaLTC2 = uniformsLib["LTC_FLOAT_2"];
-      } else {
-        // WebGL 1
-
-        if (extensions.has('OES_texture_float_linear') == true) {
-          state.rectAreaLTC1 = uniformsLib["LTC_FLOAT_1"];
-          state.rectAreaLTC2 = uniformsLib["LTC_FLOAT_2"];
-        } else if (extensions.has('OES_texture_half_float_linear') == true) {
-          state.rectAreaLTC1 = uniformsLib["LTC_HALF_1"];
-          state.rectAreaLTC2 = uniformsLib["LTC_HALF_2"];
-        } else {
-          console.warning('WebGLRenderer: Unable to use RectAreaLight. Missing WebGL extensions.');
-        }
-      }
+      state.rectAreaLTC1 = uniformsLib["LTC_FLOAT_1"];
+      state.rectAreaLTC2 = uniformsLib["LTC_FLOAT_2"];
     }
 
     state.ambient[0] = r.toDouble();
@@ -384,9 +386,12 @@ class WebGLLights {
       state.pointShadowMap.length = numPointShadows;
       state.spotShadow.length = numSpotShadows;
       state.spotShadowMap.length = numSpotShadows;
+      state.spotLightMap.length = numSpotMaps;
       state.directionalShadowMatrix.length = numDirectionalShadows;
       state.pointShadowMatrix.length = numPointShadows;
       state.spotShadowMatrix.length = numSpotShadows;
+			state.numSpotLightShadowsWithMaps = numSpotShadowsWithMaps;
+			state.numLightProbes = numLightProbes;
 
       hash["directionalLength"] = directionalLength;
       hash["pointLength"] = pointLength;
@@ -397,6 +402,9 @@ class WebGLLights {
       hash["numDirectionalShadows"] = numDirectionalShadows;
       hash["numPointShadows"] = numPointShadows;
       hash["numSpotShadows"] = numSpotShadows;
+
+			hash['numSpotMaps'] = numSpotMaps;
+			hash['numLightProbes'] = numLightProbes;
 
       state.version = nextVersion++;
     }
@@ -483,6 +491,7 @@ class LightState {
   late List directionalShadowMap;
   late List directionalShadowMatrix;
   late List spot;
+  late List spotLightMap;
   late List spotShadow;
   late List spotShadowMap;
   late List spotShadowMatrix;
@@ -492,6 +501,9 @@ class LightState {
   late List pointShadowMap;
   late List pointShadowMatrix;
   late List hemi;
+  late int numLightProbes;
+  late int numSpotLightShadowsWithMaps;
+
   dynamic rectAreaLTC1;
   dynamic rectAreaLTC2;
   
@@ -505,6 +517,7 @@ class LightState {
     directionalShadowMap = json["directionalShadowMap"];
     directionalShadowMatrix = json["directionalShadowMatrix"];
     spot = json["spot"];
+    spotLightMap = json['spotLightMap'];
     spotShadow = json["spotShadow"];
     spotShadowMap = json["spotShadowMap"];
     spotShadowMatrix = json["spotShadowMatrix"];
@@ -514,5 +527,8 @@ class LightState {
     pointShadowMap = json["pointShadowMap"];
     pointShadowMatrix = json["pointShadowMatrix"];
     hemi = json["hemi"];
+
+    numSpotLightShadowsWithMaps = json['numSpotLightShadowsWithMaps'];
+    numLightProbes = json['numLightProbes'];
   }
 }

@@ -38,6 +38,15 @@ class WebGLObjects {
       }
     }
 
+		if ( object is SkinnedMesh ) {
+			final skeleton = object.skeleton;
+
+			if ( updateMap.get( skeleton ) != frame ) {
+				skeleton?.update();
+				updateMap.set( skeleton, frame );
+			}
+		}
+    
     return buffergeometry;
   }
 

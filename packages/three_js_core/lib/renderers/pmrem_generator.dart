@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:three_js_core/others/index.dart';
 
@@ -41,9 +40,11 @@ class PMREMGenerator {
   dynamic _sigmas;
 
   final _flatCamera = OrthographicCamera();
-
   final _clearColor = Color(1, 1, 1);
   RenderTarget? _oldTarget;
+  int _oldActiveCubeFace = 0;
+  int _oldActiveMipmapLevel = 0;
+  bool _oldXrEnabled = false;
 
   late double phi;
   late double invPhi;
@@ -105,14 +106,17 @@ class PMREMGenerator {
 	/// *
   WebGLRenderTarget fromScene(Scene scene, [double sigma = 0, double near = 0.1, double far = 100]) {
     _oldTarget = _renderer.getRenderTarget();
-
+		_oldActiveCubeFace = _renderer.getActiveCubeFace();
+		_oldActiveMipmapLevel = _renderer.getActiveMipmapLevel();
+		_oldXrEnabled = _renderer.xr.enabled;
+    _renderer.xr.enabled = false;
     _setSize(256);
     final cubeUVRenderTarget = _allocateTargets();
     cubeUVRenderTarget.depthBuffer = true;
 
     _sceneToCubeUV(scene, near, far, cubeUVRenderTarget);
     if (sigma > 0) {
-      _blur(cubeUVRenderTarget, 0, 0, sigma, null);
+      _blur(cubeUVRenderTarget, 0, 0, sigma);
     }
 
     _applyPMREM(cubeUVRenderTarget);
@@ -182,8 +186,7 @@ class PMREMGenerator {
 
   void _dispose() {
     _blurMaterial?.dispose();
-
-    if (_pingPongRenderTarget != null) _pingPongRenderTarget.dispose();
+    _pingPongRenderTarget?.dispose();
 
     for (int i = 0; i < _lodPlanes.length; i++) {
       _lodPlanes[i].dispose();
@@ -191,7 +194,8 @@ class PMREMGenerator {
   }
 
   void _cleanup(RenderTarget outputTarget) {
-    _renderer.setRenderTarget(_oldTarget);
+    _renderer.setRenderTarget(_oldTarget,_oldActiveCubeFace, _oldActiveMipmapLevel);
+    _renderer.xr.enabled = _oldXrEnabled;
     outputTarget.scissorTest = false;
     _setViewport(outputTarget, 0, 0, outputTarget.width.toDouble(), outputTarget.height.toDouble());
   }
@@ -209,6 +213,11 @@ class PMREMGenerator {
     }
 
     _oldTarget = _renderer.getRenderTarget();
+		_oldActiveCubeFace = _renderer.getActiveCubeFace();
+		_oldActiveMipmapLevel = _renderer.getActiveMipmapLevel();
+		_oldXrEnabled = _renderer.xr.enabled;
+
+    _renderer.xr.enabled = false;
 
     final cubeUVRenderTarget = renderTarget ?? _allocateTargets();
     _textureToCubeUV(texture, cubeUVRenderTarget);
@@ -386,7 +395,7 @@ class PMREMGenerator {
 	/// * the poles) to approximate the orthogonally-separable blur. It is least
 	/// * accurate at the poles, but still does a decent job.
 	/// *
-  void _blur(RenderTarget cubeUVRenderTarget, int lodIn, int lodOut, double sigma, poleAxis) {
+  void _blur(RenderTarget cubeUVRenderTarget, int lodIn, int lodOut, double sigma, [poleAxis]) {
     final pingPongRenderTarget = _pingPongRenderTarget;
     _halfBlur(cubeUVRenderTarget, pingPongRenderTarget, lodIn, lodOut, sigma,'latitudinal', poleAxis);
     _halfBlur(pingPongRenderTarget, cubeUVRenderTarget, lodOut, lodOut, sigma,'longitudinal', poleAxis);
@@ -510,24 +519,12 @@ class PMREMGenerator {
         double x = (face % 3) * 2 / 3 - 1;
         double y = face > 2 ? 0 : -1;
         List<double> coordinates = [
-          x,
-          y,
-          0,
-          x + 2 / 3,
-          y,
-          0,
-          x + 2 / 3,
-          y + 1,
-          0,
-          x,
-          y,
-          0,
-          x + 2 / 3,
-          y + 1,
-          0,
-          x,
-          y + 1,
-          0
+          x, y, 0,
+          x + 2 / 3, y, 0,
+          x + 2 / 3, y + 1, 0,
+          x, y, 0,
+          x + 2 / 3, y + 1, 0,
+          x, y + 1, 0
         ];
         position.set(coordinates, positionSize * vertices * face);
         uv.set(uv1, uvSize * vertices * face);
@@ -550,7 +547,7 @@ class PMREMGenerator {
   }
 
   WebGLRenderTarget _createRenderTarget(int width, int height, Map<String,dynamic> params) {
-    final cubeUVRenderTarget = WebGLRenderTarget(width, height, WebGLRenderTargetOptions(params));
+    final cubeUVRenderTarget = WebGLRenderTarget(width, height, RenderTargetOptions(params));
     cubeUVRenderTarget.texture.mapping = CubeUVReflectionMapping;
     cubeUVRenderTarget.texture.name = 'PMREM.cubeUv';
     cubeUVRenderTarget.scissorTest = true;
@@ -571,10 +568,10 @@ class PMREMGenerator {
         'n': maxSamples,
         'CUBEUV_TEXEL_WIDTH': 1.0 / width,
         'CUBEUV_TEXEL_HEIGHT': 1.0 / height,
-        // 'CUBEUV_MAX_MIP': "$lodMax.0",
+        'CUBEUV_MAX_MIP': "$lodMax.0",
       },
       "uniforms": {
-        'envMap': {},
+        'envMap': {"value": null},
         'samples': {"value": 1},
         'weights': {"value": weights},
         'latitudinal': {"value": false},
@@ -655,7 +652,7 @@ class PMREMGenerator {
   ShaderMaterial _getEquirectMaterial() {
     final shaderMaterial = ShaderMaterial.fromMap({
       "name": 'EquirectangularToCubeUV',
-      "uniforms": {'envMap': {}},
+      "uniforms": {'envMap': {'value': null}},
       "vertexShader": _getCommonVertexShader(),
       "fragmentShader": """
 
@@ -715,27 +712,8 @@ class PMREMGenerator {
     return shaderMaterial;
   }
 
-  String _getPlatformVertexHelper() {
-    if (kIsWeb) {
-      return "";
-    }
-
-    if (Platform.isMacOS) {
-      return """
-        #define attribute in
-        #define varying out
-        #define texture2D texture
-      """;
-    }
-
-    return """
-    """;
-  }
-
   String _getCommonVertexShader() {
     return """
-
-      ${_getPlatformVertexHelper()}
 
       precision mediump float;
       precision mediump int;

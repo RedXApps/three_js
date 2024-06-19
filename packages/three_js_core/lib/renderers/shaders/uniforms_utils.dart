@@ -1,5 +1,14 @@
 part of three_shaders;
 
+List cloneUniformsGroups( src ) {
+	final dst = [];
+
+	for (int u = 0; u < src.length; u ++ ) {
+		dst.add( src[ u ].clone() );
+	}
+	return dst;
+}
+
 Map<String, dynamic> cloneUniforms(Map<String, dynamic> src) {
   var dst = <String, dynamic>{};
 

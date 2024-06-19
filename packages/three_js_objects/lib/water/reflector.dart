@@ -34,7 +34,7 @@ class Reflector extends Mesh {
 		final textureMatrix = Matrix4();
 		final PerspectiveCamera virtualCamera = camera;
 
-	  renderTarget = WebGLRenderTarget( textureWidth, textureHeight, WebGLRenderTargetOptions({'samples': multisample, 'type': HalfFloatType }));
+	  renderTarget = WebGLRenderTarget( textureWidth, textureHeight, RenderTargetOptions({'samples': multisample, 'type': HalfFloatType }));
 
 		material =  ShaderMaterial.fromMap( {
 			'name': shader['name'] ?? 'unspecified',

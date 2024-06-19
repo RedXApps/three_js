@@ -25,9 +25,9 @@ class BloomPass extends Pass {
       "format": RGBAFormat
     };
 
-    renderTargetX = WebGLRenderTarget(resolution, resolution, WebGLRenderTargetOptions(pars));
+    renderTargetX = WebGLRenderTarget(resolution, resolution, RenderTargetOptions(pars));
     renderTargetX.texture.name = 'BloomPass.x';
-    renderTargetY = WebGLRenderTarget(resolution, resolution, WebGLRenderTargetOptions(pars));
+    renderTargetY = WebGLRenderTarget(resolution, resolution, RenderTargetOptions(pars));
     renderTargetY.texture.name = 'BloomPass.y';
 
     final postCopyShader = copyShader;

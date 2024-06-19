@@ -57,7 +57,6 @@ class WebGLRenderList {
 
   void init() {
     renderItemsIndex = 0;
-
     opaque.length = 0;
     transmissive.length = 0;
     transparent.length = 0;

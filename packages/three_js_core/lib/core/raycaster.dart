@@ -172,6 +172,7 @@ class Intersection {
   Object3D? object;
   Vector2? uv;
   Vector2? uv2;
+  int batchId;
 
   /// [distance] – distance between the origin of the ray and the
   /// intersection
@@ -204,7 +205,8 @@ class Intersection {
     this.faceIndex,
     this.object,
     this.uv,
-    this.uv2
+    this.uv2,
+    this.batchId = 0
   });
 
   factory Intersection.fromJson(Map<String, dynamic> json) {

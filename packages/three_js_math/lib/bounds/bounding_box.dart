@@ -416,8 +416,9 @@ class BoundingBox{
   /// Computes the union of this box and [box], setting the upper
   /// bound of this box to the greater of the two boxes' upper bounds and the
   /// lower bound of this box to the lesser of the two boxes' lower bounds.
-  /// 
-  // BoundingBox union(BoundingBox box){
-
-  // }
+  BoundingBox union(BoundingBox box){
+		min.min( box.min );
+		max.max( box.max );
+		return this;
+  }
 }

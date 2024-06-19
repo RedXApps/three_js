@@ -24,7 +24,8 @@ class Settings{
     this.outputEncoding = LinearEncoding,
     this.toneMapping = NoToneMapping,
     this.shadowMapType = PCFShadowMap,
-    this.toneMappingExposure = 1.0
+    this.toneMappingExposure = 1.0,
+    this.logarithmicDepthBuffer = false
   }){
     this.renderOptions = renderOptions ?? {
       "format": RGBAFormat,
@@ -40,6 +41,7 @@ class Settings{
   bool autoClearDepth;
   bool autoClearStencil;
   bool localClippingEnabled;
+  bool logarithmicDepthBuffer;
   int clearColor;
   double clearAlpha;
   late Map<String,dynamic> renderOptions;
@@ -163,6 +165,7 @@ class ThreeJS{
       renderer!.clear();
       renderer!.setViewport(0,0,width,height);
       renderer!.render(scene, camera);
+      gl.flush();
     }
     else{
       postProcessor?.call(clock.getDelta());
@@ -185,11 +188,8 @@ class ThreeJS{
         "alpha": settings.alpha,
         "clearColor": settings.clearColor,
         "clearAlpha": settings.clearAlpha,
+        'logarithmicDepthBuffer': settings.logarithmicDepthBuffer
       };
-
-      if(!kIsWeb){
-        //options['logarithmicDepthBuffer'] = true;
-      }
 
       renderer = lateRenderer ?? core.WebGLRenderer(options);
       renderer!.setPixelRatio(dpr);
@@ -211,9 +211,9 @@ class ThreeJS{
       renderer!.toneMappingExposure = settings.toneMappingExposure;
     }
 
-    if(settings.useSourceTexture && !kIsWeb){
-      final core.WebGLRenderTargetOptions pars = core.WebGLRenderTargetOptions(settings.renderOptions);
-      renderTarget = core.WebGLMultisampleRenderTarget((width * dpr).toInt(), (height * dpr).toInt(), pars);
+    if(!kIsWeb){
+      final core.RenderTargetOptions pars = core.RenderTargetOptions(settings.renderOptions);
+      renderTarget = core.WebGLRenderTarget((width * dpr).toInt(), (height * dpr).toInt(), pars);
       renderer!.setRenderTarget(renderTarget);
       sourceTexture = renderer!.getRenderTargetGLTexture(renderTarget!);
     }
@@ -289,7 +289,7 @@ class ThreeJS{
                     else {
                       return texture != null?
                       Transform.scale(
-                        scaleY: settings.useSourceTexture || Platform.isAndroid?1:-1,
+                        scaleY: sourceTexture != null || Platform.isAndroid?1:-1,
                         child:Texture(textureId: texture!.textureId)
                       ):Container();
                     }

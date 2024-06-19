@@ -30,7 +30,7 @@ class Refractor extends Mesh {
 
 		// render target
 
-		renderTarget = WebGLRenderTarget( textureWidth, textureHeight, WebGLRenderTargetOptions({'samples': multisample, 'type': HalfFloatType}));
+		renderTarget = WebGLRenderTarget( textureWidth, textureHeight, RenderTargetOptions({'samples': multisample, 'type': HalfFloatType}));
 
 		// material
 

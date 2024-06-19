@@ -22,6 +22,14 @@ class WebGLGeometries {
       attributes.remove(geometry.attributes[name]);
     }
 
+		for (final name in geometry.morphAttributes.keys) {
+			final array = geometry.morphAttributes[ name ];
+
+			for (int i = 0, l = array.length; i < l; i ++ ) {
+				attributes.remove( array[ i ] );
+			}
+		}
+
     geometry.removeEventListener('dispose', onGeometryDispose);
 
     geometries.remove(geometry.id);

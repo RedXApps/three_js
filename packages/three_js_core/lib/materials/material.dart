@@ -104,6 +104,7 @@ enum MaterialProperty{
 /// The following properties and methods are inherited by all other material
 /// types (although they may have different defaults).
 class Material with EventDispatcher {
+  Euler? envMapRotation;
   dynamic metalnessNode;
   dynamic roughnessNode;
   dynamic normalNode;
@@ -115,8 +116,9 @@ class Material with EventDispatcher {
   bool fog = false;
   int blending = NormalBlending;
   int side = FrontSide;
-  bool vertexColors = false;
 
+  bool vertexColors = false;
+  bool forceSinglePass = false;
   bool sizeAttenuation = false;
 
   Vector2? normalScale;
@@ -145,6 +147,7 @@ class Material with EventDispatcher {
   List<Plane>? clippingPlanes;
   bool clipIntersection = false;
   bool clipShadows = false;
+  bool alphaHash = false;
 
   int? shadowSide;
   bool colorWrite = true;
@@ -213,6 +216,10 @@ class Material with EventDispatcher {
   Texture? specularIntensityMap;
   Texture? specularColorMap;
   Texture? sheenColorMap;
+
+  Texture? anisotropyMap;
+  Texture? iridescenceMap;
+  Texture? iridescenceThicknessMap;
 
   Texture? gradientMap;
   double sheen = 0.0;
@@ -338,7 +345,6 @@ class Material with EventDispatcher {
   late Function customProgramCacheKey;
 
   Map<String, dynamic> extra = {};
-
   String? shaderid;
 
   String get shaderID => shaderid ?? type;
@@ -789,6 +795,7 @@ class Material with EventDispatcher {
     if (dashSize != null) data["dashSize"] = dashSize;
     if (gapSize != null) data["gapSize"] = gapSize;
     if (scale != null) data["scale"] = scale;
+    data['alphaHash'] = alphaHash;
 
     if (dithering == true) data["dithering"] = true;
 
@@ -798,6 +805,9 @@ class Material with EventDispatcher {
     }
     if (premultipliedAlpha == true) {
       data["premultipliedAlpha"] = premultipliedAlpha;
+    }
+    if(forceSinglePass == true){
+      data['forceSinglePass'] = forceSinglePass;
     }
 
     if (wireframe == true) data["wireframe"] = wireframe;
@@ -895,6 +905,7 @@ class Material with EventDispatcher {
     clipShadows = source.clipShadows;
 
     shadowSide = source.shadowSide;
+    alphaHash = source.alphaHash;
 
     colorWrite = source.colorWrite;
 
@@ -909,6 +920,7 @@ class Material with EventDispatcher {
     alphaTest = source.alphaTest;
     alphaToCoverage = source.alphaToCoverage;
     premultipliedAlpha = source.premultipliedAlpha;
+    forceSinglePass = source.forceSinglePass;
 
     visible = source.visible;
 

@@ -15,6 +15,7 @@ class WebXRManager with EventDispatcher {
   bool cameraAutoUpdate = true;
   late final state;
   final WebGLRenderer renderer;
+  final depthSensing = WebXRDepthSensing();
   bool isPresenting = false;
   RenderingContext gl;
   
@@ -475,6 +476,18 @@ class WebXRManager with EventDispatcher {
     if ( glBaseLayer != null && glBaseLayer.fixedFoveation != null ) {
       glBaseLayer.fixedFoveation = foveation;
     }
+  }
+
+  String? getEnvironmentBlendMode () {
+    if ( session != null ) {
+      return session.environmentBlendMode;
+    }
+
+    return null;
+  }
+
+  hasDepthSensing () {
+    return depthSensing.texture != null;
   }
 
   //   	// Animation Loop

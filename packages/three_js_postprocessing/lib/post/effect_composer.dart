@@ -39,7 +39,7 @@ class EffectComposer {
       renderTarget = WebGLRenderTarget(
           (_width * _pixelRatio).toInt(),
           (_height * _pixelRatio).toInt(),
-          WebGLRenderTargetOptions(parameters));
+          RenderTargetOptions(parameters));
     } 
     else {
       _pixelRatio = 1;

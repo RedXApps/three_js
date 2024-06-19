@@ -187,8 +187,8 @@ class _MyAppState extends State<webgl_loader_gltf_3> {
     renderer!.shadowMap.enabled = false;
 
     if (!kIsWeb) {
-      var pars = three.WebGLRenderTargetOptions({"format": three.RGBAFormat});
-      renderTarget = three.WebGLMultisampleRenderTarget(
+      var pars = three.RenderTargetOptions({"format": three.RGBAFormat});
+      renderTarget = three.WebGLRenderTarget(
           (width * dpr).toInt(), (height * dpr).toInt(), pars);
       renderTarget.samples = 4;
       renderer!.setRenderTarget(renderTarget);

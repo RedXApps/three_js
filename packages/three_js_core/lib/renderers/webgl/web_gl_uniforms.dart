@@ -47,17 +47,17 @@ part of three_webgl;
 
 class WebGLUniforms with WebGLUniform {
   RenderingContext gl;
-  WebGLProgram program;
+  Program program;
 
   WebGLUniforms(this.gl, this.program) {
     seq = [];
     map = {};
 
-    final n = gl.getProgramParameter(program.program!, WebGL.ACTIVE_UNIFORMS);
+    final n = gl.getProgramParameter(program, WebGL.ACTIVE_UNIFORMS);
 
     for (int i = 0; i < n.id; ++i) {
-      final info = gl.getActiveUniform(program.program!, i);
-      final addr = gl.getUniformLocation(program.program!, info.name);
+      final info = gl.getActiveUniform(program, i);
+      final addr = gl.getUniformLocation(program, info.name);
       parseUniform(info, addr, this);
     }
   }
@@ -76,30 +76,6 @@ class WebGLUniforms with WebGLUniform {
     for (int i = 0, n = seq.length; i != n; ++i) {
       final u = seq[i];
       final v = values[u.id];
-
-      // final value = v["value"];
-      // final _vt = value.runtimeType.toString();
-      // print("WebGLUniforms.upload ${_vt} name: ${u.id}  value: ${value} ");
-      // if(_vt == "Matrix4" || _vt == "Matrix3" || _vt == "Color" || _vt == "Vector2" || _vt == "Vector3") {
-      //   print(value.toJson());
-      // } else if(_vt == "List<Vector3>") {
-      //   print(value.map((e) => e.toJson()));
-      // } else if( u.id == "lightProbe" ) {
-      //   print(value.map((e) => e.toJson() ) );
-      // } else if( u.id == "directionalLights" ) {
-      //   print(value.map((e) => e["color"].toJson() ) );
-      //   print(value.map((e) => e["direction"].toJson() ) );
-      // } else if(u.id == "spotLights") {
-      //   print("spotLights... ");
-      //   print(value.map((e) => e["position"].toJson() ) );
-      //   print(value.map((e) => e["direction"].toJson() ) );
-      //   print(value.map((e) => e["color"].toJson() ) );
-      // } else if(u.id == "spotShadowMatrix" || u.id == "directionalShadowMatrix") {
-      //   print(value.map((e) => e.toJson()));
-      // } else {
-      //   print(value);
-      // }
-
       if (v["needsUpdate"] != false) {
         // note: always updating when .needsUpdate is null
         u.setValue(gl, v["value"], textures);

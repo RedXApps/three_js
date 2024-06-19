@@ -1,3 +1,5 @@
+import 'package:three_js_core/textures/texture.dart';
+
 import '../core/index.dart';
 import '../materials/index.dart';
 import 'package:three_js_math/three_js_math.dart';
@@ -17,6 +19,7 @@ final _mesh = Mesh(BufferGeometry(), Material());
 /// of [name] will help you to reduce the number of draw calls and thus
 /// improve the overall rendering performance in your application.
 class InstancedMesh extends Mesh {
+  Texture? morphTexture;
   BoundingSphere? boundingSphere;
 
   /// [geometry] - an instance of [BufferGeometry].

@@ -178,7 +178,7 @@ class _MyAppState extends State<WebglShadowContact> {
     shadowGroup.position.y = -0.3;
     threeJs.scene.add(shadowGroup);
 
-    final pars = three.WebGLRenderTargetOptions({"format": three.RGBAFormat});
+    final pars = three.RenderTargetOptions({"format": three.RGBAFormat});
     // the render target that will show the shadows in the plane texture
     renderTarget2 = three.WebGLRenderTarget(512, 512, pars);
     renderTarget2.texture.generateMipmaps = false;

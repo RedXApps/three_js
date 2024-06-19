@@ -49,11 +49,11 @@ class BufferGeometry with EventDispatcher {
 
   String type = "BufferGeometry";
   BoundingBox? boundingBox;
+  BoundingSphere? boundingSphere;
   String name = "";
   Map<String, dynamic> attributes = {};
   Map<String, List<BufferAttribute>> morphAttributes = {};
   bool morphTargetsRelative = false;
-  BoundingSphere? boundingSphere;
   Map<String, int> drawRange = {"start": 0, "count": double.maxFinite.toInt()};
   Map<String, dynamic> userData = {};
   List<Map<String, dynamic>> groups = [];

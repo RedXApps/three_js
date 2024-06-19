@@ -54,3 +54,5 @@ part 'web_gl_uniforms_helper.dart';
 part 'web_gl_utils.dart';
 part 'web_gl_cube_uv_maps.dart';
 part 'web_gl_shader_cache.dart';
+
+part 'web_gl_uniforms_groups.dart';

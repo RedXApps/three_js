@@ -8,7 +8,7 @@ import 'perspective_camera.dart';
 /// 
 /// ```
 /// // Create cube render target
-/// final cubeRenderTarget = WebGLCubeRenderTarget( 128, WebGLRenderTargetOptions({'generateMipmaps': true, 'minFilter': LinearMipmapLinearFilter }));
+/// final cubeRenderTarget = WebGLCubeRenderTarget( 128, RenderTargetOptions({'generateMipmaps': true, 'minFilter': LinearMipmapLinearFilter }));
 ///
 /// // Create cube camera
 /// final cubeCamera = CubeCamera( 1, 100000, cubeRenderTarget );

@@ -66,7 +66,7 @@ class ShaderPasses extends Pass {
        material.needsUpdate = true;
 
         if (renderTargetsPass[i] == null) {
-          final pars = WebGLRenderTargetOptions({
+          final pars = RenderTargetOptions({
             "minFilter": LinearFilter,
             "magFilter": LinearFilter,
             "format": RGBAFormat

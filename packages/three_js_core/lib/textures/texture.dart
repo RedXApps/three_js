@@ -21,6 +21,7 @@ int textureId = 0;
 class Texture with EventDispatcher {
   static String? defaultImage;
   static int defaultMapping = UVMapping;
+  int channel = 0;
 
   bool isTexture = true;
   bool isWebGLRenderTarget = false;
@@ -40,7 +41,7 @@ class Texture with EventDispatcher {
   int? mapping;
   int wrapS = ClampToEdgeWrapping;
   int wrapT = ClampToEdgeWrapping;
-  int wrapR = ClampToEdgeWrapping;
+  int? wrapR = ClampToEdgeWrapping;
   int magFilter = LinearFilter;
   int minFilter = LinearMipmapLinearFilter;
   late int anisotropy;
@@ -148,6 +149,7 @@ class Texture with EventDispatcher {
     generateMipmaps = source.generateMipmaps;
     premultiplyAlpha = source.premultiplyAlpha;
     flipY = source.flipY;
+    channel = source.channel;
     unpackAlignment = source.unpackAlignment;
     encoding = source.encoding;
 
@@ -184,6 +186,7 @@ class Texture with EventDispatcher {
       "minFilter": minFilter,
       "magFilter": magFilter,
       "anisotropy": anisotropy,
+      "channel": channel,
       "flipY": flipY,
       "premultiplyAlpha": premultiplyAlpha,
       "unpackAlignment": unpackAlignment

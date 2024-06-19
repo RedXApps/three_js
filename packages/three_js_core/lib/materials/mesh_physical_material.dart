@@ -43,6 +43,36 @@ import 'package:three_js_math/three_js_math.dart';
 /// this material.
 class MeshPhysicalMaterial extends MeshStandardMaterial {
 
+  double _dispersion = 0;
+	double get dispersion => _dispersion;
+	set dispersion(double value ) {
+		if (_dispersion > 0 != value > 0 ) {
+			version ++;
+		}
+		_dispersion = value;
+	}
+
+  double iridescenceIOR = 1.3;
+  List<double> iridescenceThicknessRange = [ 100, 400 ];
+  double _iridescence = 0;
+	double get iridescence => _iridescence;
+	set iridescence(double value ) {
+		if (_iridescence > 0 != value > 0 ) {
+			version ++;
+		}
+		_iridescence = value;
+	}
+
+  double _anisotropy = 0;
+	double get anisotropy => _anisotropy;
+	set anisotropy(double value ) {
+		if (_anisotropy > 0 != value > 0 ) {
+			version ++;
+		}
+		_anisotropy = value;
+	}
+  double anisotropyRotation = 0;
+
   /// [parameters] - (optional) an object with one or more
   /// properties defining the material's appearance. Any property of the
   /// material (including any property inherited from [Material] and
@@ -69,6 +99,7 @@ class MeshPhysicalMaterial extends MeshStandardMaterial {
     specularIntensity = 1.0;
     specularColor = Color(1, 1, 1);
     ior = 1.5;
+    dispersion = 0;
 
     defines = {'STANDARD': '', 'PHYSICAL': ''};
 
@@ -93,6 +124,18 @@ class MeshPhysicalMaterial extends MeshStandardMaterial {
     super.copy(source);
 
     defines = {'STANDARD': '', 'PHYSICAL': ''};
+    if(source is MeshPhysicalMaterial){
+      anisotropy = source.anisotropy;
+      anisotropyRotation = source.anisotropyRotation;
+      anisotropyMap = source.anisotropyMap;
+      dispersion = source.dispersion;
+
+      iridescence = source.iridescence;
+      iridescenceMap = source.iridescenceMap;
+      iridescenceIOR = source.iridescenceIOR;
+      iridescenceThicknessRange = [ ...source.iridescenceThicknessRange ];
+      iridescenceThicknessMap = source.iridescenceThicknessMap;
+    }
 
     clearcoat = source.clearcoat;
     clearcoatMap = source.clearcoatMap;
@@ -102,6 +145,7 @@ class MeshPhysicalMaterial extends MeshStandardMaterial {
     clearcoatNormalScale!.setFrom(source.clearcoatNormalScale!);
 
     ior = source.ior;
+
 
     if (source.sheenColor != null) {
       sheenColor!.setFrom(source.sheenColor!);

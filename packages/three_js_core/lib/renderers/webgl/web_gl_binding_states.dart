@@ -2,14 +2,11 @@ part of three_webgl;
 
 class WebGLBindingStates {
   RenderingContext gl;
-  WebGLExtensions extensions;
   WebGLAttributes attributes;
-  WebGLCapabilities capabilities;
 
   late int maxVertexAttributes;
 
   dynamic extension;
-  late bool vaoAvailable;
 
   late Map<String, dynamic> defaultState;
   late Map<String, dynamic> currentState;
@@ -19,17 +16,10 @@ class WebGLBindingStates {
 
   WebGLBindingStates(
     this.gl,
-    this.extensions,
     this.attributes,
-    this.capabilities,
   ) {
     maxVertexAttributes = gl.getParameter(WebGL.MAX_VERTEX_ATTRIBS);
-
     bindingStates = <int, dynamic>{};
-
-    extension = capabilities.isWebGL2 ? null : extensions.get('OES_vertex_array_object');
-    vaoAvailable = capabilities.isWebGL2 || extension != null;
-
     defaultState = createBindingState(null);
     currentState = defaultState;
   }
@@ -43,34 +33,18 @@ class WebGLBindingStates {
   ) {
     bool updateBuffers = false;
 
-    if (vaoAvailable) {
-      final state = getBindingState(geometry, program, material);
+    final state = getBindingState(geometry, program, material);
 
-      if (currentState != state) {
-        currentState = state;
-        bindVertexArrayObject(currentState["object"]);
-      }
-
-      updateBuffers = needsUpdate(object, geometry, program, index);
-      // print("WebGLBindingStates.dart setup object: ${object}  updateBuffers: ${updateBuffers}  ");
-
-      if (updateBuffers) saveCache(object, geometry, program, index);
-    } 
-    else {
-      final wireframe = (material.wireframe == true);
-
-      if (
-        currentState["geometry"] != geometry.id ||
-        currentState["program"] != program.id ||
-        currentState["wireframe"] != wireframe
-      ) {
-        currentState["geometry"] = geometry.id;
-        currentState["program"] = program.id;
-        currentState["wireframe"] = wireframe;
-
-        updateBuffers = true;
-      }
+    if (currentState != state) {
+      currentState = state;
+      bindVertexArrayObject(currentState["object"]);
     }
+
+    updateBuffers = needsUpdate(object, geometry, program, index);
+    // print("WebGLBindingStates.dart setup object: ${object}  updateBuffers: ${updateBuffers}  ");
+
+    if (updateBuffers) saveCache(object, geometry, program, index);
+
 
     if (index != null) {
       attributes.update(index, WebGL.ELEMENT_ARRAY_BUFFER);
@@ -88,30 +62,22 @@ class WebGLBindingStates {
     }
   }
 
-  createVertexArrayObject() {
-    if (capabilities.isWebGL2) return gl.createVertexArray();
-
-    return extension.createVertexArrayOES();
+  VertexArrayObject createVertexArrayObject() {
+    return gl.createVertexArray();
   }
 
-  bindVertexArrayObject(VertexArrayObject? vao) {
-    if (capabilities.isWebGL2) {
-      if (vao != null) {
-        return gl.bindVertexArray(vao);
-      } 
-      else {
-        console.warning(" WebGLBindingStates.dart  bindVertexArrayObject VAO is null");
-        return;
-      }
+  void bindVertexArrayObject(VertexArrayObject? vao) {
+    if (vao != null) {
+      return gl.bindVertexArray(vao);
+    } 
+    else {
+      console.warning(" WebGLBindingStates.dart  bindVertexArrayObject VAO is null");
+      return;
     }
-
-    return extension.bindVertexArrayOES(vao);
   }
 
-  deleteVertexArrayObject(vao) {
-    if (capabilities.isWebGL2) return gl.deleteVertexArray(vao);
-
-    return extension.deleteVertexArrayOES(vao);
+  void deleteVertexArrayObject(vao) {
+    return gl.deleteVertexArray(vao);
   }
 
   getBindingState(
@@ -265,9 +231,6 @@ class WebGLBindingStates {
     }
 
     if (attributeDivisors[attribute] != meshPerAttribute) {
-      // final extension = capabilities.isWebGL2 ? gl : extensions.get( 'ANGLE_instanced_arrays' );
-      // extension[ capabilities.isWebGL2 ? 'vertexAttribDivisor' : 'vertexAttribDivisorANGLE' ]( attribute, meshPerAttribute );
-
       gl.vertexAttribDivisor(attribute, meshPerAttribute);
       attributeDivisors[attribute] = meshPerAttribute;
     }
@@ -286,7 +249,7 @@ class WebGLBindingStates {
   }
 
   void vertexAttribPointer(int index, int size, int type, bool normalized, int stride, int offset) {
-    if (capabilities.isWebGL2 == true && (type == WebGL.INT || type == WebGL.UNSIGNED_INT)) {
+    if ((type == WebGL.INT || type == WebGL.UNSIGNED_INT)) {
       gl.vertexAttribIPointer(index, size, type, stride, offset);
     } else {
       gl.vertexAttribPointer(index, size, type, normalized, stride, offset);
@@ -299,10 +262,6 @@ class WebGLBindingStates {
     WebGLProgram program,
     BufferGeometry geometry,
   ) {
-    if (capabilities.isWebGL2 == false && (object is InstancedMesh || geometry is InstancedBufferGeometry)) {
-      if (extensions.get('ANGLE_instanced_arrays') == null) return;
-    }
-
     initAttributes();
 
     final geometryAttributes = geometry.attributes;

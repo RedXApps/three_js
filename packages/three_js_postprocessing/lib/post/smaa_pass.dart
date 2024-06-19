@@ -12,7 +12,7 @@
 // 	SMAAPass(int width,int height ) : super() {
 // 		// render targets
 // 		this.edgesRT = new WebGLRenderTarget( width, height, 
-//       WebGLRenderTargetOptions({
+//       RenderTargetOptions({
 //         "depthBuffer": false,
 //         "generateMipmaps": false,
 //         "minFilter": LinearFilter,
@@ -22,7 +22,7 @@
 // 		this.edgesRT.texture.name = 'SMAAPass.edges';
 
 // 		this.weightsRT = new WebGLRenderTarget( width, height, 
-//       WebGLRenderTargetOptions({
+//       RenderTargetOptions({
 //         "depthBuffer": false,
 //         "generateMipmaps": false,
 //         "minFilter": LinearFilter,

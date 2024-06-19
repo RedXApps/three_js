@@ -24,6 +24,8 @@ class Light extends Object3D {
   bool isHemisphereLightProbe = false;
   bool isHemisphereLight = false;
 
+  dynamic map;
+
   Color? groundColor;
 
   /// [color] - (optional) hexadecimal color of the light. Default

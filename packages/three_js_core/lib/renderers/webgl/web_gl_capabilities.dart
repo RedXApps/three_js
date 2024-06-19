@@ -6,6 +6,7 @@ class WebGLCapabilities {
   Map<String, dynamic> parameters;
   RenderingContext gl;
   WebGLExtensions extensions;
+  WebGLUtils utils;
 
   String precision = 'highp';
   String maxPrecision = "highp";
@@ -30,7 +31,7 @@ class WebGLCapabilities {
 
   bool get drawBuffers => isWebGL2 || extensions.has('WEBGL_draw_buffers');
 
-  WebGLCapabilities(this.gl, this.extensions, this.parameters) {
+  WebGLCapabilities(this.gl, this.extensions, this.parameters, this.utils) {
     precision = parameters["precision"] ?? "highp";
 
     maxPrecision = getMaxPrecision(precision);
@@ -72,7 +73,40 @@ class WebGLCapabilities {
     return maxAnisotropy!;
   }
 
-  String getMaxPrecision(precision) {
-    return 'highp';
+	bool textureFormatReadable(int textureFormat ) {
+		if ( textureFormat != RGBAFormat && utils.convert( textureFormat ) != gl.getParameter( WebGL.IMPLEMENTATION_COLOR_READ_FORMAT ) ) {
+			return false;
+		}
+		return true;
+	}
+
+	bool textureTypeReadable(int textureType ) {
+		final halfFloatSupportedByExt = ( textureType == HalfFloatType ) && ( extensions.has( 'EXT_color_buffer_half_float' ) || extensions.has( 'EXT_color_buffer_float' ) );
+
+		if ( textureType != UnsignedByteType && utils.convert( textureType ) != gl.getParameter( WebGL.IMPLEMENTATION_COLOR_READ_TYPE ) && // Edge and Chrome Mac < 52 (#9513)
+			textureType != FloatType && ! halfFloatSupportedByExt ) {
+			return false;
+		}
+
+		return true;
+	}
+  String getMaxPrecision([String? precision]) {
+		if ( precision == 'highp' ) {
+			if ( gl.getShaderPrecisionFormat( WebGL.VERTEX_SHADER, WebGL.HIGH_FLOAT ).precision > 0 &&
+				gl.getShaderPrecisionFormat( WebGL.FRAGMENT_SHADER, WebGL.HIGH_FLOAT ).precision > 0 ) {
+				return 'highp';
+			}
+
+			precision = 'mediump';
+		}
+
+		if ( precision == 'mediump' ) {
+			if ( gl.getShaderPrecisionFormat( WebGL.VERTEX_SHADER, WebGL.MEDIUM_FLOAT ).precision > 0 &&
+				gl.getShaderPrecisionFormat( WebGL.FRAGMENT_SHADER, WebGL.MEDIUM_FLOAT ).precision > 0 ) {
+				return 'mediump';
+			}
+		}
+
+		return 'lowp';
   }
 }

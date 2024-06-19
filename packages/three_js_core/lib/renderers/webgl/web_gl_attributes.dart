@@ -2,15 +2,10 @@ part of three_webgl;
 
 class WebGLAttributes {
   RenderingContext gl;
-  WebGLCapabilities capabilities;
-
-  bool isWebGL2 = true;
 
   WeakMap buffers = WeakMap();
 
-  WebGLAttributes(this.gl, this.capabilities) {
-    isWebGL2 = capabilities.isWebGL2;
-  }
+  WebGLAttributes(this.gl,);
 
   Map<String, dynamic> createBuffer(dynamic attribute, int bufferType, {String? name}) {//BufferAttribute<NativeArray<num>>
     final array = attribute.array;
@@ -24,9 +19,7 @@ class WebGLAttributes {
     gl.bindBuffer(bufferType, buffer);
     gl.bufferData(bufferType, array, usage);
 
-    if (attribute.onUploadCallback != null) {
-      attribute.onUploadCallback!();
-    }
+    attribute.onUploadCallback?.call();
 
     if (attribute is Float32BufferAttribute) {
       type = WebGL.FLOAT;
@@ -36,12 +29,8 @@ class WebGLAttributes {
       console.error('WebGLAttributes: Unsupported data buffer format: Float64Array.');
     } 
     else if (attribute is Float16BufferAttribute) {
-      if (isWebGL2) {
-        bytesPerElement = 2;
-        type = WebGL.HALF_FLOAT;
-      } else {
-        console.error('WebGLAttributes: Usage of Float16BufferAttribute requires WebGL2.');
-      }
+      bytesPerElement = 2;
+      type = WebGL.HALF_FLOAT;
     } else if (attribute is Uint16BufferAttribute) {
       bytesPerElement = Uint16List.bytesPerElement;
       type = WebGL.UNSIGNED_SHORT;
@@ -75,18 +64,32 @@ class WebGLAttributes {
 
   void updateBuffer(Buffer buffer, BufferAttribute attribute, int bufferType) {
     final updateRange = attribute.updateRange;
+    print(updateRange);
 
     gl.bindBuffer(bufferType, buffer);
 
     if (updateRange!["count"] == -1) {
       // Not using update ranges
       gl.bufferSubData(bufferType, 0, attribute.array);
-    } 
+    }
+
+		// if ( updateRange.length != 0 ) {
+		// 	for ( let i = 0, l = updateRanges.length; i < l; i ++ ) {
+		// 		const range = updateRanges[ i ];
+		// 		gl.bufferSubData( bufferType, range.start * array.BYTES_PER_ELEMENT,
+		// 			array, range.start, range.count );
+		// 	}
+
+		// 	attribute.clearUpdateRanges();
+		// }
+
     else {
       console.info(" WebGLAttributes.dart gl.bufferSubData need debug confirm.... ");
       gl.bufferSubData(bufferType, updateRange["offset"]! * attribute.itemSize, attribute.array);
       updateRange["count"] = -1; // reset range
     }
+
+    attribute.onUploadCallback?.call();
   }
 
   dynamic get(BaseBufferAttribute attribute) {

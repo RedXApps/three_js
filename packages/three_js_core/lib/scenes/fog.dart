@@ -11,6 +11,10 @@ class FogBase {
   bool isFog = false;
   bool isFogExp2 = false;
 
+  FogBase clone() {
+    throw(" need implement .... ");
+  }
+
   Map<String,dynamic> toJson() {
     throw(" need implement .... ");
   }

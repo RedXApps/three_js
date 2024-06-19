@@ -4,6 +4,7 @@ import './texture.dart';
 
 /// This class can be used to automatically save the depth information of a rendering into a texture.
 class DepthTexture extends Texture {
+  int? compareFunction;
 
   /// [width] - width of the texture.
   /// 
@@ -78,7 +79,16 @@ class DepthTexture extends Texture {
     flipY = false;
     generateMipmaps = false;
   }
-
+	
+  @override
+  DepthTexture copy(Texture source ) {
+		super.copy( source );
+    if(source is DepthTexture){
+		  compareFunction = source.compareFunction;
+    }
+		return this;
+	}
+  
   @override
   DepthTexture clone() {
     return super.clone() as DepthTexture; 
