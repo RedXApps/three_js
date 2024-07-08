@@ -205,7 +205,11 @@ class WebGLState {
 
       if (drawBuffers.length != textures.length || (drawBuffers.isNotEmpty && drawBuffers[0] != WebGL.COLOR_ATTACHMENT0)) {
         for (int i = 0, il = textures.length; i < il; i++) {
-          drawBuffers[i] = WebGL.COLOR_ATTACHMENT0 + i;
+          if(drawBuffers.length <= i){
+            drawBuffers.add(WebGL.COLOR_ATTACHMENT0 + i);
+          }else{
+            drawBuffers[i] = WebGL.COLOR_ATTACHMENT0 + i;
+          }
         }
 
         drawBuffers.length = textures.length;
@@ -470,7 +474,7 @@ class WebGLState {
     }
   }
 
-  void bindTexture(int webglType,int? webglTexture, [int? webglSlot]) {
+  void bindTexture(int webglType, WebGLTexture? webglTexture, [int? webglSlot]) {
 		if ( webglSlot == null ) {
 			if ( currentTextureSlot == null ) {
 				webglSlot = WebGL.TEXTURE0 + maxTextures - 1;
@@ -495,7 +499,7 @@ class WebGLState {
 
       gl.bindTexture(
         webglType, 
-        WebGLTexture( webglTexture ?? emptyTextures[webglType])
+        webglTexture ?? emptyTextures[webglType]
       );
 
       boundTexture.type = webglType;

@@ -248,7 +248,7 @@ class WebGLLights {
 
         final shadow = light.shadow!;
 
-				if ( light.map ) {
+				if ( light.map != null) {
 					state.spotLightMap[ numSpotMaps ] = light.map;
 					numSpotMaps ++;
 

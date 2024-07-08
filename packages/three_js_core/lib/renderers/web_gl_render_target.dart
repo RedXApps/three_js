@@ -21,7 +21,7 @@ class RenderTarget with EventDispatcher {
   bool isXRRenderTarget = false;
 
   List<Texture> textures = [];
-  late Texture texture;
+  //late Texture _texture;
   late Vector4 scissor;
   late bool scissorTest;
   late Vector4 viewport;
@@ -39,6 +39,18 @@ class RenderTarget with EventDispatcher {
     _samples = value;
   }
 
+	Texture get texture => textures[0];
+
+	set texture(Texture value ) {
+    if(textures.isEmpty){
+      textures.add(value);
+    }
+    else{
+		  textures[0] = value;
+    }
+	}
+
+
   RenderTarget(this.width, this.height, [RenderTargetOptions? options]):super(){
     scissor = Vector4(0, 0, width.toDouble(), height.toDouble());
     scissorTest = false;
@@ -49,7 +61,7 @@ class RenderTarget with EventDispatcher {
 
     final image = ImageElement(width: width, height: height, depth: 1);
 
-    texture = Texture(
+    final texture = Texture(
       image, 
       this.options.mapping, 
       this.options.wrapS, 
@@ -73,7 +85,7 @@ class RenderTarget with EventDispatcher {
 			textures.add(texture.clone());
 			textures[i].isRenderTargetTexture = true;
 		}
-
+    
     depthBuffer = this.options.depthBuffer != null ? this.options.depthBuffer! : true;
     stencilBuffer = this.options.stencilBuffer;
 
@@ -86,11 +98,12 @@ class RenderTarget with EventDispatcher {
   }
 
   RenderTarget clone() {
-    throw ("RenderTarget clone need implemnt ");
+    return RenderTarget(1,1).copy( this );
   }
 
   RenderTarget copy(RenderTarget source){
 		height = source.height;
+    width = source.width;
 		depth = source.depth;
 
 		scissor.setFrom( source.scissor );
@@ -129,9 +142,11 @@ class RenderTarget with EventDispatcher {
       this.height = height;
       this.depth = depth;
 
-      texture.image!.width = width;
-      texture.image!.height = height;
-      texture.image!.depth = depth;
+			for (int i = 0, il = textures.length; i < il; i ++ ) {
+				textures[ i ].image.width = width;
+				textures[ i ].image.height = height;
+				textures[ i ].image.depth = depth;
+			}
 
       dispose();
     }
@@ -192,7 +207,7 @@ class RenderTargetOptions {
 
   int? samples;
   int? internalFormat;
-  int count = 0;
+  int count = 1;
 
   bool resolveDepthBuffer = false;
   bool resolveStencilBuffer = false;

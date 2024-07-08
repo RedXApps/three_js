@@ -313,7 +313,7 @@ class WebGLTextures {
       }
     }
 
-    state.bindTexture(WebGL.TEXTURE_2D, textureProperties["__webglTexture"].id, WebGL.TEXTURE0 + slot);
+    state.bindTexture(WebGL.TEXTURE_2D, textureProperties["__webglTexture"], WebGL.TEXTURE0 + slot);
   }
 
   void setTexture2DArray(Texture texture, int slot) {
@@ -1140,8 +1140,13 @@ class WebGLTextures {
 
         for ( int i = 0; i < textures.length; i ++ ) {
 					final texture = textures[i];
-					renderTargetProperties['__webglColorRenderbuffer'][i] = _gl.createRenderbuffer();
-          _gl.bindRenderbuffer(WebGL.RENDERBUFFER, renderTargetProperties["__webglColorRenderbuffer"]);
+          if(renderTargetProperties['__webglColorRenderbuffer'].length <= i){
+            renderTargetProperties['__webglColorRenderbuffer'].add(_gl.createRenderbuffer());
+          }
+          else{
+					  renderTargetProperties['__webglColorRenderbuffer'][i] = _gl.createRenderbuffer();
+          }
+          _gl.bindRenderbuffer(WebGL.RENDERBUFFER, renderTargetProperties["__webglColorRenderbuffer"][i]);
 
           final glFormat = utils.convert(texture.format, texture.colorSpace);
           final glType = utils.convert(texture.type);
