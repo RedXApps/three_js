@@ -1075,7 +1075,7 @@ class Object3D with EventDispatcher {
       child.dispose();
     }
 
-    material?.dispose();
+    // material?.dispose();
     material = null;
     overrideMaterial?.dispose();
     overrideMaterial = null;
